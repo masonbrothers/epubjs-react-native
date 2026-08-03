@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable global-require */
-import '@testing-library/jest-native/extend-expect';
-
 import 'react-native-gesture-handler/jestSetup';
 
 jest.setTimeout(20000);

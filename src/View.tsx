@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { Dimensions, View as RNView } from 'react-native';
+import { Dimensions, Platform, View as RNView } from 'react-native';
 import { WebView } from 'react-native-webview';
 import type {
   ShouldStartLoadRequest,
@@ -413,6 +413,8 @@ export function View({
     if (book.current) registerBook(book.current);
   }, [registerBook]);
 
+  const webViewOriginWhitelist = ['file://*', 'http://*', 'https://*'];
+
   return (
     <GestureHandler
       width={width}
@@ -470,9 +472,9 @@ export function View({
         source={{ uri: templateUri }}
         showsVerticalScrollIndicator={false}
         javaScriptEnabled
-        originWhitelist={['*']}
+        originWhitelist={webViewOriginWhitelist}
         scrollEnabled={false}
-        mixedContentMode="compatibility"
+        mixedContentMode={Platform.OS === 'android' ? 'never' : undefined}
         onMessage={onMessage}
         menuItems={menuItems?.map((item, key) => ({
           label: item.label,
@@ -480,9 +482,9 @@ export function View({
         }))}
         onCustomMenuSelection={handleOnCustomMenuSelection}
         allowingReadAccessToURL={allowedUris}
-        allowUniversalAccessFromFileURLs
-        allowFileAccessFromFileURLs
-        allowFileAccess
+        allowUniversalAccessFromFileURLs={false}
+        allowFileAccessFromFileURLs={Platform.OS === 'android'}
+        allowFileAccess={Platform.OS === 'android'}
         javaScriptCanOpenWindowsAutomatically
         onOpenWindow={(event) => {
           event.preventDefault();

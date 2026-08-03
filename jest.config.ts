@@ -100,7 +100,7 @@ export default {
   // notifyMode: "failure-change",
 
   // A preset that is used as a base for Jest's configuration
-  preset: '@testing-library/react-native',
+  preset: 'react-native',
 
   // Run tests from one or more projects
   // projects: undefined,
@@ -137,7 +137,6 @@ export default {
   // A list of paths to modules that run some code to configure or set up the testing framework before each test
   setupFilesAfterEnv: [
     '<rootDir>/jest.setup.ts',
-    '@testing-library/jest-native/extend-expect',
   ],
 
   // The number of seconds after which a test is considered as slow and reported as such in the results.
@@ -182,10 +181,9 @@ export default {
   // transform: undefined,
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
-  // transformIgnorePatterns: [
-  //   "/node_modules/",
-  //   "\\.pnp\\.[^\\/]+$"
-  // ],
+  transformIgnorePatterns: [
+    'node_modules/(?!(@react-native|react-native|react-native-gesture-handler|react-native-reanimated|react-native-webview|@testing-library)/)',
+  ],
 
   // An array of regexp pattern strings that are matched against all modules before the module loader will automatically return a mock for them
   // unmockedModulePathPatterns: undefined,

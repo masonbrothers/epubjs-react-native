@@ -3,6 +3,27 @@ import type { Flow, Manager, Spread, Theme, ePubCfi } from '../types';
 import template from '../template';
 import type { SourceType } from '../utils/enums/source-type.enum';
 
+export function serializeForInlineScript(value: unknown): string {
+  return JSON.stringify(value)
+    .replace(/</g, '\\u003C')
+    .replace(/>/g, '\\u003E')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+}
+
+function serializeOptionalInlineScript(value: unknown): string {
+  return value === undefined ? 'undefined' : serializeForInlineScript(value);
+}
+
+function escapeHtmlAttribute(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
 export function useInjectWebViewVariables() {
   const injectWebViewVariables = useCallback(
     ({
@@ -41,39 +62,63 @@ export function useInjectWebViewVariables() {
       return template
         .replace(
           /<script id="jszip"><\/script>/,
-          `<script src="${jszip}"></script>`
+          `<script src="${escapeHtmlAttribute(jszip)}"></script>`
         )
         .replace(
           /<script id="epubjs"><\/script>/,
-          `<script src="${epubjs}"></script>`
+          `<script src="${escapeHtmlAttribute(epubjs)}"></script>`
         )
-        .replace(/const type = window.type;/, `const type = '${type}';`)
-        .replace(/const file = window.book;/, `const file = '${book}';`)
+        .replace(
+          /const type = window.type;/,
+          `const type = ${serializeForInlineScript(type)};`
+        )
+        .replace(
+          /const file = window.book;/,
+          `const file = ${serializeForInlineScript(book)};`
+        )
         .replace(
           /const theme = window.theme;/,
-          `const theme = ${JSON.stringify(theme)};`
+          `const theme = ${serializeForInlineScript(theme)};`
         )
         .replace(
           /const initialLocations = window.locations;/,
-          `const initialLocations = ${locations};`
+          `const initialLocations = ${serializeOptionalInlineScript(
+            locations
+          )};`
         )
         .replace(
           /const enableSelection = window.enable_selection;/,
-          `const enableSelection = ${enableSelection};`
+          `const enableSelection = ${serializeForInlineScript(
+            enableSelection
+          )};`
         )
         .replace(
           /allowScriptedContent: allowScriptedContent/,
-          `allowScriptedContent: ${allowScriptedContent}`
+          `allowScriptedContent: ${serializeOptionalInlineScript(
+            allowScriptedContent
+          )}`
         )
-        .replace(/allowPopups: allowPopups/, `allowPopups: ${allowPopups}`)
-        .replace(/manager: "default"/, `manager: ${JSON.stringify(manager)}`)
-        .replace(/flow: "auto"/, `flow: ${JSON.stringify(flow)}`)
-        .replace(/snap: undefined/, `snap: ${snap ?? undefined}`)
+        .replace(
+          /allowPopups: allowPopups/,
+          `allowPopups: ${serializeOptionalInlineScript(allowPopups)}`
+        )
+        .replace(
+          /manager: "default"/,
+          `manager: ${serializeForInlineScript(manager)}`
+        )
+        .replace(/flow: "auto"/, `flow: ${serializeForInlineScript(flow)}`)
+        .replace(
+          /snap: undefined/,
+          `snap: ${serializeOptionalInlineScript(snap)}`
+        )
         .replace(
           /spread: undefined/,
-          `spread: ${spread ? JSON.stringify(spread) : undefined}`
+          `spread: ${serializeOptionalInlineScript(spread)}`
         )
-        .replace(/fullsize: undefined/, `fullsize: ${fullsize ?? undefined}`)
+        .replace(
+          /fullsize: undefined/,
+          `fullsize: ${serializeOptionalInlineScript(fullsize)}`
+        )
         .replace(
           /book\.locations\.generate\(1600\)/,
           `book.locations.generate(${charactersPerLocation})`
