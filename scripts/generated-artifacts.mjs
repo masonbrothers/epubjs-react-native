@@ -1,10 +1,12 @@
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const require = createRequire(import.meta.url);
 const manifestPath = resolve(root, 'generated-artifacts.json');
 const expectedEngineCommit = '0af7496052fb140aae07c7ce9d0e3828229a19d5';
 const expectedJszipVersion = '3.10.1';
@@ -35,9 +37,10 @@ if (engineCommit !== expectedEngineCommit) {
   );
 }
 
-const jszipPackagePath = resolve(root, 'node_modules/jszip/package.json');
+let jszipPackagePath;
 let jszipPackage;
 try {
+  jszipPackagePath = require.resolve('jszip/package.json');
   jszipPackage = JSON.parse(readFileSync(jszipPackagePath, 'utf8'));
 } catch {
   throw new Error('JSZip is missing. Run `npm ci --ignore-scripts` first.');
@@ -67,7 +70,7 @@ const definitions = {
     source: `masonbrothers/epub.js@${engineCommit}:dist/epub.min.js`,
   },
   jszip: {
-    input: resolve(root, 'node_modules/jszip/dist/jszip.min.js'),
+    input: resolve(dirname(jszipPackagePath), 'dist/jszip.min.js'),
     output: resolve(root, 'src/jszip.ts'),
     source: `jszip@${jszipPackage.version}:dist/jszip.min.js`,
   },
