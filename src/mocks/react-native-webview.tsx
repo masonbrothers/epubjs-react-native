@@ -1,4 +1,4 @@
-import React, { forwardRef, useImperativeHandle } from 'react';
+import { forwardRef, useImperativeHandle } from 'react';
 
 export const mockInjectJavaScript = jest.fn();
 export let lastWebViewProps: Record<string, unknown> | null = null;

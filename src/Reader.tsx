@@ -61,13 +61,13 @@ export function Reader({
       const epubjsFileUri = `${documentDirectory}/epub.min.js`;
       try {
         await writeAsStringAsync(jszipFileUri, jszip);
-      } catch (e) {
+      } catch {
         throw new Error('failed to write jszip js file');
       }
 
       try {
         await writeAsStringAsync(epubjsFileUri, epubjs);
-      } catch (e) {
+      } catch {
         throw new Error('failed to write epubjs js file');
       }
 
@@ -235,7 +235,7 @@ export function Reader({
           await writeAsStringAsync(fileUri, content);
           setTemplateUrl(fileUri);
         }
-      } catch (error) {
+      } catch {
         throw new Error('Error saving index.html file:');
       }
     };

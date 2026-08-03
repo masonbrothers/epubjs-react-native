@@ -212,12 +212,8 @@ export function View({
 
       handleChangeIsBookmarked(bookmarks, currentLocation);
 
-      if (currentLocation.atStart) setAtStart(true);
-      else if (currentLocation.atEnd) setAtEnd(true);
-      else {
-        setAtStart(false);
-        setAtEnd(false);
-      }
+      setAtStart(Boolean(currentLocation.atStart));
+      setAtEnd(Boolean(currentLocation.atEnd));
       return onLocationChange(
         totalLocations,
         currentLocation,
@@ -385,19 +381,14 @@ export function View({
   const handleOnShouldStartLoadWithRequest = (
     request: ShouldStartLoadRequest
   ) => {
-    if (
-      !isRendering &&
-      request.mainDocumentURL &&
-      request.url !== request.mainDocumentURL
-    ) {
-      goToLocation(request.url.replace(request.mainDocumentURL, ''));
+    if (/^(https?:|mailto:|tel:)/i.test(request.url)) {
+      onPressExternalLink?.(request.url);
+      return false;
     }
 
-    if (
-      (request.url.includes('mailto:') || request.url.includes('tel:')) &&
-      onPressExternalLink
-    ) {
-      onPressExternalLink(request.url);
+    if (request.mainDocumentURL && request.url !== request.mainDocumentURL) {
+      goToLocation(request.url.replace(request.mainDocumentURL, ''));
+      return false;
     }
 
     return true;
@@ -413,7 +404,7 @@ export function View({
     if (book.current) registerBook(book.current);
   }, [registerBook]);
 
-  const webViewOriginWhitelist = ['file://*', 'http://*', 'https://*'];
+  const webViewOriginWhitelist = ['file://*', 'https://*'];
 
   return (
     <GestureHandler
@@ -485,7 +476,7 @@ export function View({
         allowUniversalAccessFromFileURLs={false}
         allowFileAccessFromFileURLs={Platform.OS === 'android'}
         allowFileAccess={Platform.OS === 'android'}
-        javaScriptCanOpenWindowsAutomatically
+        javaScriptCanOpenWindowsAutomatically={Boolean(onPressExternalLink)}
         onOpenWindow={(event) => {
           event.preventDefault();
 

@@ -6,6 +6,7 @@
     "jest.config.ts",
     "jest.setup.ts",
     "src/__tests__/**",
-    "src/mocks/**"
+    "src/mocks/**",
+    "vendor/**"
   ]
 }
