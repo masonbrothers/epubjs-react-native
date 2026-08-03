@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
-import type { LoadingFileProps, ReaderProps } from 'src/types';
+import type { LoadingFileProps, ReaderProps } from '../../types';
 
 import { styles } from './styles';
 

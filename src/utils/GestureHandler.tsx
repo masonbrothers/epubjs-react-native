@@ -58,19 +58,23 @@ export function GestureHandler({
 	const swipeDown = Gesture.Fling().runOnJS(true).direction(Directions.DOWN).onStart(onSwipeDown)
 
 	let lastTap: number | null = null
-	let timer: NodeJS.Timeout
+	let timer: ReturnType<typeof setTimeout> | null = null
 
 	const handleDoubleTap = () => {
 		if (lastTap) {
 			onDoubleTap()
-			clearTimeout(timer)
+			if (timer) {
+				clearTimeout(timer)
+			}
 			lastTap = null
 		} else {
 			lastTap = Date.now()
 			timer = setTimeout(() => {
 				onSingleTap()
 				lastTap = null
-				clearTimeout(timer)
+				if (timer) {
+					clearTimeout(timer)
+				}
 			}, 500)
 		}
 	}
