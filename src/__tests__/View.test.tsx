@@ -22,7 +22,7 @@ describe('View WebView configuration', () => {
       <ReaderProvider>
         <View
           templateUri="file:///tmp/index.html"
-          allowedUris="file:///tmp/index.html,file:///tmp/jszip.min.js,file:///tmp/epub.min.js"
+          readAccessUrl="file:///tmp/"
           width="100%"
           height="100%"
           defaultTheme={{ body: { background: '#ffffff' } }}

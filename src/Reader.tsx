@@ -10,6 +10,7 @@ import { getSourceType } from './utils/getSourceType';
 import { getSourceName } from './utils/getPathname';
 import { SourceType } from './utils/enums/source-type.enum';
 import { isFsUri } from './utils/isFsUri';
+import { getReadAccessUrl } from './utils/getReadAccessUrl';
 import jszip from './jszip';
 import epubjs from './epubjs';
 
@@ -50,7 +51,7 @@ export function Reader({
   const { injectWebViewVariables } = useInjectWebViewVariables();
   const [template, setTemplate] = useState<string | null>(null);
   const [templateUrl, setTemplateUrl] = useState<string | null>(null);
-  const [allowedUris, setAllowedUris] = useState<string | null>(null);
+  const [readAccessUrl, setReadAccessUrl] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -70,7 +71,12 @@ export function Reader({
         throw new Error('failed to write epubjs js file');
       }
 
-      setAllowedUris(`${jszipFileUri},${epubjsFileUri}`);
+      setReadAccessUrl(
+        getReadAccessUrl(
+          [jszipFileUri, epubjsFileUri],
+          documentDirectory || jszipFileUri
+        )
+      );
 
       if (src) {
         const sourceType = getSourceType(src);
@@ -83,7 +89,12 @@ export function Reader({
 
         if (!isExternalSource) {
           if (isSrcInFs) {
-            setAllowedUris(`${src}${jszipFileUri},${epubjsFileUri}`);
+            setReadAccessUrl(
+              getReadAccessUrl(
+                [src, jszipFileUri, epubjsFileUri],
+                documentDirectory || jszipFileUri
+              )
+            );
           }
           if (sourceType === SourceType.BASE64) {
             setTemplate(
@@ -166,7 +177,12 @@ export function Reader({
 
             if (!bookFileUri) throw new Error("Couldn't download book");
 
-            setAllowedUris(`${bookFileUri},${jszipFileUri},${epubjsFileUri}`);
+            setReadAccessUrl(
+              getReadAccessUrl(
+                [bookFileUri, jszipFileUri, epubjsFileUri],
+                documentDirectory || jszipFileUri
+              )
+            );
 
             setTemplate(
               injectWebViewVariables({
@@ -237,7 +253,7 @@ export function Reader({
     });
   }
 
-  if (!templateUrl || !allowedUris) {
+  if (!templateUrl || !readAccessUrl) {
     return renderLoadingFileComponent({
       fileSize,
       downloadProgress,
@@ -248,7 +264,7 @@ export function Reader({
   return (
     <View
       templateUri={templateUrl}
-      allowedUris={allowedUris}
+      readAccessUrl={readAccessUrl}
       width={width}
       height={height}
       defaultTheme={defaultTheme || initialTheme}

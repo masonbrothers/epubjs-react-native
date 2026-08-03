@@ -13,12 +13,12 @@ import { GestureHandler } from './utils/GestureHandler';
 
 export type ViewProps = Omit<ReaderProps, 'src' | 'fileSystem'> & {
   templateUri: string;
-  allowedUris: string;
+  readAccessUrl: string;
 };
 
 export function View({
   templateUri,
-  allowedUris,
+  readAccessUrl,
   onStarted = () => {},
   onReady = () => {},
   onDisplayError = () => {},
@@ -481,7 +481,7 @@ export function View({
           key: key.toString(),
         }))}
         onCustomMenuSelection={handleOnCustomMenuSelection}
-        allowingReadAccessToURL={allowedUris}
+        allowingReadAccessToURL={readAccessUrl}
         allowUniversalAccessFromFileURLs={false}
         allowFileAccessFromFileURLs={Platform.OS === 'android'}
         allowFileAccess={Platform.OS === 'android'}
