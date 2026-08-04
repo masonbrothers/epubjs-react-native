@@ -4,6 +4,7 @@ import {
   useInjectWebViewVariables,
 } from '../hooks/useInjectWebviewVariables';
 import { SourceType } from '../utils/enums/source-type.enum';
+import template from '../template';
 
 describe('useInjectWebViewVariables', () => {
   it('serializes inline values without leaving a raw closing script payload', () => {
@@ -61,8 +62,78 @@ describe('useInjectWebViewVariables', () => {
       'const initialLocations = ["epubcfi(/6/2!/4/2/2)"];'
     );
     expect(html).toContain('book = ePub(file, { encoding: "base64" });');
-    expect(html).toContain('<script src="file:///tmp/jszip&quot;unsafe.js"></script>');
-    expect(html).toContain('<script src="file:///tmp/epub&lt;unsafe&gt;.js"></script>');
+    expect(html).toContain(
+      '<script src="file:///tmp/jszip&quot;unsafe.js"></script>'
+    );
+    expect(html).toContain(
+      '<script src="file:///tmp/epub&lt;unsafe&gt;.js"></script>'
+    );
     expect(html).not.toContain(`const file = '${base64Book}';`);
+  });
+
+  it('does not let replacement tokens corrupt inline substitutions', () => {
+    const { result } = renderHook(() => useInjectWebViewVariables());
+    const html = result.current.injectWebViewVariables({
+      jszip: 'file:///tmp/jszip$&.js',
+      epubjs: 'file:///tmp/epub$1.js',
+      type: SourceType.BINARY,
+      book: `file:///tmp/book$'.epub`,
+      theme: {
+        body: {
+          fontFamily: '$` serif',
+        },
+      },
+      enableSelection: false,
+      allowScriptedContent: false,
+      allowPopups: false,
+      manager: 'default',
+      flow: 'auto',
+      snap: undefined,
+      spread: undefined,
+      fullsize: undefined,
+      charactersPerLocation: 1600,
+    });
+
+    expect(html).toContain(
+      '<script src="file:///tmp/jszip$&amp;.js"></script>'
+    );
+    expect(html).toContain('<script src="file:///tmp/epub$1.js"></script>');
+    expect(html).toContain(
+      `const file = ${serializeForInlineScript(`file:///tmp/book$'.epub`)};`
+    );
+    expect(html).toContain(
+      `const theme = ${serializeForInlineScript({
+        body: {
+          fontFamily: '$` serif',
+        },
+      })};`
+    );
+  });
+});
+
+describe('template bridge contract', () => {
+  it('reports display errors with the caught error message', () => {
+    expect(template).toContain('.catch(function (err) {');
+    expect(template).toContain('reason: err?.message ?? String(err)');
+  });
+
+  it('waits for locations and the first display before reporting readiness', () => {
+    const generation = template.indexOf(
+      'return book.locations.generate(1600);'
+    );
+    const display = template.indexOf('return rendition.display();');
+    const currentLocation = template.indexOf(
+      'var currentLocation = rendition.currentLocation();'
+    );
+    const locationsReady = template.indexOf('type: "onLocationsReady"');
+
+    expect(generation).toBeGreaterThan(-1);
+    expect(display).toBeGreaterThan(generation);
+    expect(currentLocation).toBeGreaterThan(display);
+    expect(locationsReady).toBeGreaterThan(currentLocation);
+    expect(template).toContain('var currentCfi = currentLocation?.start?.cfi;');
+    expect(template).toContain(
+      'Math.floor(book.locations.percentageFromCfi(currentCfi) * 100)'
+    );
   });
 });

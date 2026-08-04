@@ -48,10 +48,10 @@ describe('ReaderProvider bridge contract', () => {
     expect(readerApi.theme).toEqual({ body: { background: '#111111' } });
     expect(readerApi.flow).toBe('scrolled-doc');
     expect(mockBook.injectJavaScript).toHaveBeenCalledWith(
-      expect.stringContaining("rendition.themes.register")
+      expect.stringContaining('rendition.themes.register')
     );
     expect(mockBook.injectJavaScript).toHaveBeenCalledWith(
-      expect.stringContaining("rendition.themes.font('Georgia')")
+      expect.stringContaining('rendition.themes.font("Georgia")')
     );
     expect(mockBook.injectJavaScript).toHaveBeenCalledWith(
       expect.stringContaining("rendition.themes.fontSize('120%')")
@@ -104,7 +104,10 @@ describe('ReaderProvider bridge contract', () => {
       readerApi.goPrevious();
       readerApi.goNext();
       readerApi.search('needle', 2, 5, { sectionId: 'chapter-1' });
-      readerContext.setSearchResults({ results: [searchResult], totalResults: 1 });
+      readerContext.setSearchResults({
+        results: [searchResult],
+        totalResults: 1,
+      });
       readerApi.injectJavascript('window.test = true;');
       readerApi.clearSearchResults();
     });
@@ -112,10 +115,19 @@ describe('ReaderProvider bridge contract', () => {
     expect(readerApi.isSearching).toBe(true);
     expect(readerApi.searchResults).toEqual({ results: [], totalResults: 0 });
     expect(mockBook.injectJavaScript).toHaveBeenCalledWith(
-      expect.stringContaining(`rendition.display('${location.start.cfi}')`)
+      expect.stringContaining(
+        `rendition.display(${JSON.stringify(location.start.cfi)})`
+      )
     );
     expect(mockBook.injectJavaScript).toHaveBeenCalledWith(
-      expect.stringContaining("rendition.once('relocated', () => rendition.moveTo(0));")
+      expect.stringContaining(
+        "rendition.off('relocated', rendition.__resetScrollOffsetAfterNavigation);"
+      )
+    );
+    expect(mockBook.injectJavaScript).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "rendition.once('relocated', rendition.__resetScrollOffsetAfterNavigation);"
+      )
     );
     expect(mockBook.injectJavaScript).toHaveBeenCalledWith(
       expect.stringContaining('const page = 2;')
@@ -129,6 +141,73 @@ describe('ReaderProvider bridge contract', () => {
     expect(mockBook.injectJavaScript).toHaveBeenCalledWith(
       expect.stringContaining('const chapterId = "chapter-1";')
     );
-    expect(mockBook.injectJavaScript).toHaveBeenCalledWith('window.test = true;');
+    const searchScript = mockBook.injectJavaScript.mock.calls.find(
+      ([script]) =>
+        typeof script === 'string' && script.includes('const term = "needle";')
+    )?.[0];
+
+    expect(searchScript).toContain('const wasLoaded = !!item.document;');
+    expect(
+      searchScript!.indexOf('const wasLoaded = !!item.document;')
+    ).toBeLessThan(searchScript!.indexOf('item.load(book.load.bind(book))'));
+    expect(searchScript).toContain('if (!wasLoaded) {');
+    expect(searchScript).toContain('item.unload();');
+    expect(searchScript).toContain(
+      'const flattenedToc = flatten(book.navigation.toc);'
+    );
+    expect(searchScript).toContain('flattenedToc.findIndex(');
+    expect(searchScript).toContain(
+      "JSON.stringify({ type: 'onSearch', results: [], totalResults: 0 })"
+    );
+    expect(searchScript).toContain(
+      "console.error('[epubjs-react-native] search failed', err);"
+    );
+    expect(searchScript).not.toContain('alert(err?.message);');
+    expect(mockBook.injectJavaScript).toHaveBeenCalledWith(
+      'window.test = true;'
+    );
+  });
+
+  it('serializes string bridge inputs instead of interpolating raw JavaScript', () => {
+    const fontFamily = `Apostrophe's $& Font`;
+    const cfiRange = `epubcfi(/6/2[chap'ter]!/4/2/2)`;
+
+    act(() => {
+      readerApi.changeFontFamily(fontFamily);
+      readerApi.goToLocation(cfiRange);
+      readerApi.removeAnnotationByCfi(cfiRange);
+      readerContext.removeAnnotations('highlight');
+    });
+
+    const fontScript = mockBook.injectJavaScript.mock.calls.find(
+      ([script]) =>
+        typeof script === 'string' && script.includes('rendition.themes.font(')
+    )?.[0];
+    const locationScript = mockBook.injectJavaScript.mock.calls.find(
+      ([script]) =>
+        typeof script === 'string' && script.includes('rendition.display(')
+    )?.[0];
+    const removeByCfiScript = mockBook.injectJavaScript.mock.calls.find(
+      ([script]) =>
+        typeof script === 'string' &&
+        script.includes("['highlight', 'underline', 'mark'].forEach(type =>") &&
+        script.includes(JSON.stringify(cfiRange))
+    )?.[0];
+    const removeByTypeScript = mockBook.injectJavaScript.mock.calls.find(
+      ([script]) =>
+        typeof script === 'string' &&
+        script.includes('const annotationType = "highlight";')
+    )?.[0];
+
+    expect(fontScript).toContain(
+      `rendition.themes.font(${JSON.stringify(fontFamily)});`
+    );
+    expect(locationScript).toContain(
+      `rendition.display(${JSON.stringify(cfiRange)});`
+    );
+    expect(removeByCfiScript).toContain(
+      `rendition.annotations.remove(${JSON.stringify(cfiRange)}, type);`
+    );
+    expect(removeByTypeScript).toContain('annotation.type === annotationType');
   });
 });

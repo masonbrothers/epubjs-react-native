@@ -3,9 +3,9 @@
   "engine": {
     "repository": "https://github.com/masonbrothers/epub.js.git",
     "submodulePath": "vendor/epub.js",
-    "commit": "0af7496052fb140aae07c7ce9d0e3828229a19d5",
+    "commit": "a26aa79de5dfd2f890c9f28aae858e4653cc78d5",
     "artifact": "src/epubjs.ts",
-    "sha256": "ba57894a82acf291cf3577f388372940b4be0423def5623da73142c9ee8bfc9f"
+    "sha256": "a82969b69153ed64c9022a9146ff0995ad65766f2795d3f5c0a6e698597a37b8"
   },
   "jszip": {
     "version": "3.10.1",
@@ -15,7 +15,9 @@
   },
   "licenses": [
     "licenses/EPUBJS-BSD-2-Clause.txt",
+    "licenses/EPUBJS-BUNDLED-MIT-NOTICES.txt",
     "licenses/JSZIP-MIT.txt",
+    "licenses/LOCALFORAGE-APACHE-2.0.txt",
     "licenses/PAKO-MIT.txt"
   ]
 }

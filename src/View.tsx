@@ -111,6 +111,8 @@ export function View({
     setFlow,
   } = useContext(ReaderContext);
   const book = useRef<WebView>(null);
+  const pendingInitialLocation = useRef(initialLocation);
+  const initialLocationRestoreStarted = useRef(false);
   const [selectedText, setSelectedText] = useState<{
     cfiRange: string;
     cfiRangeText: string;
@@ -119,6 +121,11 @@ export function View({
   useEffect(() => {
     setFlow(flow || 'auto');
   }, [flow, setFlow]);
+
+  useEffect(() => {
+    pendingInitialLocation.current = initialLocation;
+    initialLocationRestoreStarted.current = false;
+  }, [initialLocation]);
 
   useEffect(() => {
     if (getInjectionJavascriptFn && book.current) {
@@ -141,7 +148,14 @@ export function View({
   };
 
   const onMessage = (event: WebViewMessageEvent) => {
-    const parsedEvent = JSON.parse(event.nativeEvent.data);
+    let parsedEvent;
+    try {
+      parsedEvent = JSON.parse(event.nativeEvent.data);
+    } catch {
+      return;
+    }
+
+    if (!parsedEvent || typeof parsedEvent !== 'object') return;
 
     const { type } = parsedEvent;
 
@@ -175,6 +189,7 @@ export function View({
       }
 
       if (initialLocation) {
+        initialLocationRestoreStarted.current = true;
         goToLocation(initialLocation);
       }
 
@@ -187,6 +202,8 @@ export function View({
 
     if (type === 'onDisplayError') {
       const { reason } = parsedEvent;
+      pendingInitialLocation.current = undefined;
+      initialLocationRestoreStarted.current = false;
       setIsRendering(false);
 
       return onDisplayError(reason);
@@ -201,6 +218,13 @@ export function View({
     if (type === 'onLocationChange') {
       const { totalLocations, currentLocation, progress, currentSection } =
         parsedEvent;
+      const pendingLocation = pendingInitialLocation.current;
+      if (pendingLocation) {
+        if (!initialLocationRestoreStarted.current) return;
+        pendingInitialLocation.current = undefined;
+        initialLocationRestoreStarted.current = false;
+      }
+
       setTotalLocations(totalLocations);
       setCurrentLocation(currentLocation);
       setProgress(progress);
@@ -344,14 +368,14 @@ export function View({
 
     if (type === 'onUpdateBookmark') {
       const { bookmark } = parsedEvent;
-      const Bookmarks = bookmarks;
-
-      const index = Bookmarks.findIndex((item) => item.id === bookmark.id);
-      Bookmarks[index] = bookmark;
+      const updatedBookmarks = bookmarks.map((item) =>
+        item.id === bookmark.id ? bookmark : item
+      );
 
       onUpdateBookmark(bookmark);
-      handleChangeIsBookmarked(Bookmarks);
-      return onChangeBookmarks(Bookmarks);
+      setBookmarks(updatedBookmarks);
+      handleChangeIsBookmarked(updatedBookmarks);
+      return onChangeBookmarks(updatedBookmarks);
     }
 
     return () => {};

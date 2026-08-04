@@ -6,14 +6,19 @@ import { styles } from './styles';
 
 export function LoadingFile({
   downloadProgress,
+  downloadError,
   width,
   height,
 }: LoadingFileProps & Pick<ReaderProps, 'width' | 'height'>) {
   return (
     <View style={[styles.container, { width, height }]}>
-      <ActivityIndicator size="large" />
+      {!downloadError && <ActivityIndicator size="large" />}
 
-      <Text style={styles.text}>Loading {downloadProgress}%</Text>
+      <Text style={styles.text}>
+        {downloadError
+          ? `Unable to open book: ${downloadError}`
+          : `Loading ${downloadProgress}%`}
+      </Text>
     </View>
   );
 }

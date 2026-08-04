@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(import.meta.url);
 const manifestPath = resolve(root, 'generated-artifacts.json');
-const expectedEngineCommit = '0af7496052fb140aae07c7ce9d0e3828229a19d5';
+const expectedEngineCommit = 'a26aa79de5dfd2f890c9f28aae858e4653cc78d5';
 const expectedJszipVersion = '3.10.1';
 const expectedJszipIntegrity =
   'sha512-xXDvecyTpGLrqFrvkrUSoxxfJI5AH7U8zxxtVclpsUtMCq4JQ290LY8AW5c7Ggnr/Y/oK+bQMbqK2qmtk3pN4g==';
@@ -126,7 +126,9 @@ const manifest = `${JSON.stringify(
     },
     licenses: [
       'licenses/EPUBJS-BSD-2-Clause.txt',
+      'licenses/EPUBJS-BUNDLED-MIT-NOTICES.txt',
       'licenses/JSZIP-MIT.txt',
+      'licenses/LOCALFORAGE-APACHE-2.0.txt',
       'licenses/PAKO-MIT.txt',
     ],
   },
@@ -156,7 +158,9 @@ if (mode === 'generate') {
     actual = readFileSync(output, 'utf8');
     actualManifest = readFileSync(manifestPath, 'utf8');
   } catch {
-    throw new Error('Generated artifacts are missing. Run `npm run generate:generated`.');
+    throw new Error(
+      'Generated artifacts are missing. Run `npm run generate:generated`.'
+    );
   }
 
   if (actual !== expected) {

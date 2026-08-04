@@ -62,66 +62,72 @@ export function useInjectWebViewVariables() {
       return template
         .replace(
           /<script id="jszip"><\/script>/,
-          `<script src="${escapeHtmlAttribute(jszip)}"></script>`
+          () => `<script src="${escapeHtmlAttribute(jszip)}"></script>`
         )
         .replace(
           /<script id="epubjs"><\/script>/,
-          `<script src="${escapeHtmlAttribute(epubjs)}"></script>`
+          () => `<script src="${escapeHtmlAttribute(epubjs)}"></script>`
         )
         .replace(
           /const type = window.type;/,
-          `const type = ${serializeForInlineScript(type)};`
+          () => `const type = ${serializeForInlineScript(type)};`
         )
         .replace(
           /const file = window.book;/,
-          `const file = ${serializeForInlineScript(book)};`
+          () => `const file = ${serializeForInlineScript(book)};`
         )
         .replace(
           /const theme = window.theme;/,
-          `const theme = ${serializeForInlineScript(theme)};`
+          () => `const theme = ${serializeForInlineScript(theme)};`
         )
         .replace(
           /const initialLocations = window.locations;/,
-          `const initialLocations = ${serializeOptionalInlineScript(
-            locations
-          )};`
+          () =>
+            `const initialLocations = ${serializeOptionalInlineScript(
+              locations
+            )};`
         )
         .replace(
           /const enableSelection = window.enable_selection;/,
-          `const enableSelection = ${serializeForInlineScript(
-            enableSelection
-          )};`
+          () =>
+            `const enableSelection = ${serializeForInlineScript(
+              enableSelection
+            )};`
         )
         .replace(
           /allowScriptedContent: allowScriptedContent/,
-          `allowScriptedContent: ${serializeOptionalInlineScript(
-            allowScriptedContent
-          )}`
+          () =>
+            `allowScriptedContent: ${serializeOptionalInlineScript(
+              allowScriptedContent
+            )}`
         )
         .replace(
           /allowPopups: allowPopups/,
-          `allowPopups: ${serializeOptionalInlineScript(allowPopups)}`
+          () => `allowPopups: ${serializeOptionalInlineScript(allowPopups)}`
         )
         .replace(
           /manager: "default"/,
-          `manager: ${serializeForInlineScript(manager)}`
+          () => `manager: ${serializeForInlineScript(manager)}`
         )
-        .replace(/flow: "auto"/, `flow: ${serializeForInlineScript(flow)}`)
+        .replace(
+          /flow: "auto"/,
+          () => `flow: ${serializeForInlineScript(flow)}`
+        )
         .replace(
           /snap: undefined/,
-          `snap: ${serializeOptionalInlineScript(snap)}`
+          () => `snap: ${serializeOptionalInlineScript(snap)}`
         )
         .replace(
           /spread: undefined/,
-          `spread: ${serializeOptionalInlineScript(spread)}`
+          () => `spread: ${serializeOptionalInlineScript(spread)}`
         )
         .replace(
           /fullsize: undefined/,
-          `fullsize: ${serializeOptionalInlineScript(fullsize)}`
+          () => `fullsize: ${serializeOptionalInlineScript(fullsize)}`
         )
         .replace(
           /book\.locations\.generate\(1600\)/,
-          `book.locations.generate(${charactersPerLocation})`
+          () => `book.locations.generate(${charactersPerLocation})`
         );
     },
     []

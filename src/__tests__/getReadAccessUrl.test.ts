@@ -35,4 +35,16 @@ describe('getReadAccessUrl', () => {
       )
     ).toBe('file:///var/mobile/Containers/Data/Application/reader/Documents/');
   });
+
+  it('does not widen read access to the filesystem root when files share no directory', () => {
+    expect(
+      getReadAccessUrl(
+        [
+          'file:///private/var/mobile/book.epub',
+          'file:///tmp/reader/index.html',
+        ],
+        'file:///tmp/reader/'
+      )
+    ).toBe('file:///tmp/reader/');
+  });
 });

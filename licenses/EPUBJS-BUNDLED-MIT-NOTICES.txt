@@ -1,0 +1,45 @@
+EPUB.js embedded runtime dependency notices
+
+The generated EPUB.js browser artifact is built with the following MIT
+licensed packages and their transitive runtime dependencies:
+
+- @xmldom/xmldom 0.7.5
+  Copyright 2019-present Christopher J. Brody and other contributors
+  Copyright 2012-2017 @jindw and other contributors
+- core-js 3.18.3
+  Copyright (c) 2014-2021 Denis Pushkarev
+- event-emitter 0.3.5
+  Copyright (C) 2012-2015 Mariusz Nowak
+- d 1.0.0, es5-ext 0.10.24, es6-iterator 2.0.1, es6-symbol 3.1.1
+  Copyright Mariusz Nowak and contributors
+- lie 3.1.1
+  Copyright (c) 2014 Calvin Metcalf
+- immediate 3.0.6
+  Copyright (c) 2012 Barnesandnoble.com, Donavon West, Domenic Denicola,
+  Brian Cavalier
+- lodash 4.17.21
+  Copyright OpenJS Foundation and other contributors
+  Based on Underscore.js, copyright Jeremy Ashkenas, DocumentCloud and
+  Investigative Reporters & Editors
+- marks-pane 1.0.9
+  Copyright Fred Chasen and contributors
+- path-webpack 0.0.3
+  Copyright Fred Chasen and contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

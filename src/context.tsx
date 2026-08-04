@@ -740,7 +740,7 @@ function ReaderProvider({ children }: { children: React.ReactNode }) {
 
   const changeFontFamily = useCallback((fontFamily: string) => {
     book.current?.injectJavaScript(`
-      rendition.themes.font('${fontFamily}');
+      rendition.themes.font(${JSON.stringify(fontFamily)});
       rendition.views().forEach(view => view.pane ? view.pane.render() : null); true;
     `);
     dispatch({ type: Types.CHANGE_FONT_FAMILY, payload: fontFamily });
@@ -802,7 +802,9 @@ function ReaderProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const goToLocation = useCallback((targetCfi: ePubCfi) => {
-    book.current?.injectJavaScript(`rendition.display('${targetCfi}'); true`);
+    book.current?.injectJavaScript(
+      `rendition.display(${JSON.stringify(targetCfi)}); true`
+    );
   }, []);
 
   const goPrevious = useCallback(
@@ -812,7 +814,16 @@ function ReaderProvider({ children }: { children: React.ReactNode }) {
         `
       ${
         !options?.keepScrollOffset && state.flow === 'scrolled-doc'
-          ? `rendition.once('relocated', () => rendition.moveTo(0));`
+          ? `
+            if (rendition.__resetScrollOffsetAfterNavigation) {
+              rendition.off('relocated', rendition.__resetScrollOffsetAfterNavigation);
+            }
+            rendition.__resetScrollOffsetAfterNavigation = () => {
+              rendition.__resetScrollOffsetAfterNavigation = undefined;
+              rendition.moveTo(0);
+            };
+            rendition.once('relocated', rendition.__resetScrollOffsetAfterNavigation);
+          `
           : ''
       }
       rendition.prev();
@@ -829,7 +840,16 @@ function ReaderProvider({ children }: { children: React.ReactNode }) {
         `
       ${
         !options?.keepScrollOffset && state.flow === 'scrolled-doc'
-          ? `rendition.once('relocated', () => rendition.moveTo(0));`
+          ? `
+            if (rendition.__resetScrollOffsetAfterNavigation) {
+              rendition.off('relocated', rendition.__resetScrollOffsetAfterNavigation);
+            }
+            rendition.__resetScrollOffsetAfterNavigation = () => {
+              rendition.__resetScrollOffsetAfterNavigation = undefined;
+              rendition.moveTo(0);
+            };
+            rendition.once('relocated', rendition.__resetScrollOffsetAfterNavigation);
+          `
           : ''
       }
       rendition.next();
@@ -866,29 +886,33 @@ function ReaderProvider({ children }: { children: React.ReactNode }) {
       const reactNativeWebview = window.ReactNativeWebView !== undefined && window.ReactNativeWebView!== null ? window.ReactNativeWebView: window;
       if (!term) {
         reactNativeWebview.postMessage(
-          JSON.stringify({ type: 'onSearch', results: [] })
+          JSON.stringify({ type: 'onSearch', results: [], totalResults: 0 })
         );
       } else {
         Promise.all(
           book.spine.spineItems.map((item) => {
+            const wasLoaded = !!item.document;
             return item.load(book.load.bind(book)).then(() => {
               let results = item.find(term.trim());
               const locationHref = item.href;
+              const flattenedToc = flatten(book.navigation.toc);
 
-              let [match] = flatten(book.navigation.toc)
+              let [match] = flattenedToc
               .filter((chapter, index) => {
                   return book.canonical(chapter.href).includes(locationHref)
               }, null);
 
               if (results.length > 0) {
-                results = results.map(result => ({ ...result, section: { ...match, index: book.navigation.toc.findIndex(elem => elem.id === match?.id) } }));
+                results = results.map(result => ({ ...result, section: { ...match, index: flattenedToc.findIndex(elem => elem.id === match?.id) } }));
 
                 if (chapterId) {
                   results = results.filter(result => result.section.id === chapterId);
                 }
               }
 
-              item.unload();
+              if (!wasLoaded) {
+                item.unload();
+              }
               return Promise.resolve(results);
             });
           })
@@ -899,7 +923,7 @@ function ReaderProvider({ children }: { children: React.ReactNode }) {
             JSON.stringify({ type: 'onSearch', results: items.slice((page - 1) * limit, page * limit), totalResults: items.length })
           );
         }).catch(err => {
-          alert(err?.message);
+          console.error('[epubjs-react-native] search failed', err);
 
           reactNativeWebview.postMessage(
             JSON.stringify({ type: 'onSearch', results: [], totalResults: 0 })
@@ -1032,7 +1056,7 @@ function ReaderProvider({ children }: { children: React.ReactNode }) {
       book,
       `
         ['highlight', 'underline', 'mark'].forEach(type => {
-          rendition.annotations.remove('${cfiRange}', type);
+          rendition.annotations.remove(${JSON.stringify(cfiRange)}, type);
         });
 
         ${webViewInjectFunctions.onChangeAnnotations()}
@@ -1045,9 +1069,12 @@ function ReaderProvider({ children }: { children: React.ReactNode }) {
       book,
       `
         let annotations = Object.values(rendition.annotations._annotations);
+        const annotationType = ${JSON.stringify(type)};
 
-        if (typeof ${type} === 'string') {
-          annotations = annotations.filter(annotation => annotation.type === ${type});
+        if (typeof annotationType === 'string') {
+          annotations = annotations.filter(
+            annotation => annotation.type === annotationType
+          );
         }
 
         annotations.forEach(annotation => {
@@ -1192,22 +1219,21 @@ function ReaderProvider({ children }: { children: React.ReactNode }) {
 
   const updateBookmark = useCallback(
     (id: number, data: object) => {
-      const { bookmarks } = state;
       const bookmark = state.bookmarks.find((item) => item.id === id);
 
       if (!bookmark) return;
 
-      bookmark.data = data;
-
-      const index = state.bookmarks.findIndex((item) => item.id === id);
-      bookmarks[index] = bookmark;
+      const updatedBookmark = { ...bookmark, data };
+      const bookmarks = state.bookmarks.map((item) =>
+        item.id === id ? updatedBookmark : item
+      );
 
       dispatch({ type: Types.SET_BOOKMARKS, payload: bookmarks });
 
       webViewInjectFunctions.injectJavaScript(
         book,
         `
-        const bookmark = ${JSON.stringify(bookmark)};
+        const bookmark = ${JSON.stringify(updatedBookmark)};
          const reactNativeWebview = window.ReactNativeWebView !== undefined && window.ReactNativeWebView!== null ? window.ReactNativeWebView: window;
           reactNativeWebview.postMessage(JSON.stringify({
           type: "onUpdateBookmark",

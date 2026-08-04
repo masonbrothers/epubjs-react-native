@@ -44,16 +44,13 @@ function commonDirectoryPath(paths: string[]): string | null {
   }
 
   if (commonLength === 0) {
-    return '/';
+    return null;
   }
 
   return `/${first.slice(0, commonLength).join('/')}/`;
 }
 
-export function getReadAccessUrl(
-  uris: string[],
-  fallbackUri: string
-): string {
+export function getReadAccessUrl(uris: string[], fallbackUri: string): string {
   const directories = uris
     .map((uri) => getFileDirectory(uri))
     .filter((directory): directory is string => Boolean(directory));

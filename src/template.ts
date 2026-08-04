@@ -161,33 +161,37 @@ export default `
       book.ready
         .then(function () {
           if (initialLocations) {
-            return book.locations.load(initialLocations);
+            book.locations.load(initialLocations);
+            return;
           }
 
-          book.locations.generate(1600).then(function () {
-            reactNativeWebview.postMessage(JSON.stringify({
-              type: "onLocationsReady",
-              epubKey: book.key(),
-              locations: book.locations.save(),
-              totalLocations: book.locations.total,
-              currentLocation: rendition.currentLocation(),
-              progress: book.locations.percentageFromCfi(rendition.currentLocation().start.cfi),
-            }));
-          });
+          return book.locations.generate(1600);
         })
         .then(function () {
-          var displayed = rendition.display();
+          return rendition.display();
+        })
+        .then(function () {
+          var currentLocation = rendition.currentLocation();
+          var currentCfi = currentLocation?.start?.cfi;
+          var progress = currentCfi
+            ? Math.floor(book.locations.percentageFromCfi(currentCfi) * 100)
+            : 0;
 
-          displayed.then(function () {
-            var currentLocation = rendition.currentLocation();
+          reactNativeWebview.postMessage(JSON.stringify({
+            type: "onLocationsReady",
+            epubKey: book.key(),
+            locations: book.locations.save(),
+            totalLocations: book.locations.total,
+            currentLocation: currentLocation,
+            progress: progress,
+          }));
 
-            reactNativeWebview.postMessage(JSON.stringify({
-              type: "onReady",
-              totalLocations: book.locations.total,
-              currentLocation: currentLocation,
-              progress: book.locations.percentageFromCfi(currentLocation.start.cfi),
-            }));
-          });
+          reactNativeWebview.postMessage(JSON.stringify({
+            type: "onReady",
+            totalLocations: book.locations.total,
+            currentLocation: currentLocation,
+            progress: progress,
+          }));
 
           book
           .coverUrl()
@@ -239,7 +243,7 @@ export default `
         .catch(function (err) {
           reactNativeWebview.postMessage(JSON.stringify({
           type: "onDisplayError",
-          reason: reason
+          reason: err?.message ?? String(err)
         }));
       });
 

@@ -4,6 +4,7 @@ import { ReaderContext, ReaderProvider } from '../context';
 import { View } from '../View';
 import {
   lastWebViewProps,
+  mockInjectJavaScript,
   resetWebViewMockState,
 } from '../mocks/react-native-webview';
 
@@ -141,5 +142,182 @@ describe('View WebView configuration', () => {
     expect(context!.atStart).toBe(false);
     expect(context!.atEnd).toBe(true);
     expect(lastWebViewProps?.javaScriptCanOpenWindowsAutomatically).toBe(false);
+  });
+
+  it('ignores malformed WebView messages instead of crashing the React tree', () => {
+    render(
+      <ReaderProvider>
+        <View
+          templateUri="file:///tmp/index.html"
+          readAccessUrl="file:///tmp/"
+          width="100%"
+          height="100%"
+          defaultTheme={{ body: { background: '#ffffff' } }}
+        />
+      </ReaderProvider>
+    );
+
+    expect(() =>
+      lastWebViewProps?.onMessage?.({
+        nativeEvent: { data: 'not-json' },
+      } as never)
+    ).not.toThrow();
+  });
+
+  it('updates bookmarks without mutating the initial bookmark objects', () => {
+    const initialBookmark = {
+      id: 7,
+      chapter: { href: 'chapter.xhtml', id: 'chapter', label: 'Chapter' },
+      location: {
+        atStart: false,
+        atEnd: false,
+        start: { cfi: 'epubcfi(/6/2)' },
+        end: { cfi: 'epubcfi(/6/4)' },
+      },
+      text: 'Before',
+      data: { color: 'yellow' },
+    };
+    const initialBookmarks = [initialBookmark];
+    const onChangeBookmarks = jest.fn();
+
+    render(
+      <ReaderProvider>
+        <View
+          templateUri="file:///tmp/index.html"
+          readAccessUrl="file:///tmp/"
+          width="100%"
+          height="100%"
+          defaultTheme={{ body: { background: '#ffffff' } }}
+          initialBookmarks={initialBookmarks as never}
+          onChangeBookmarks={onChangeBookmarks}
+        />
+      </ReaderProvider>
+    );
+
+    act(() => {
+      lastWebViewProps?.onMessage?.({
+        nativeEvent: {
+          data: JSON.stringify({
+            type: 'onUpdateBookmark',
+            bookmark: { ...initialBookmark, text: 'After' },
+          }),
+        },
+      } as never);
+    });
+
+    expect(initialBookmark.text).toBe('Before');
+    expect(initialBookmarks[0]?.text).toBe('Before');
+    expect(onChangeBookmarks).toHaveBeenCalledWith([
+      expect.objectContaining({ id: 7, text: 'After' }),
+    ]);
+  });
+
+  it('does not publish the default location before restoring an initial CFI', () => {
+    const initialLocation = 'epubcfi(/6/8!/4/2)';
+    const onLocationChange = jest.fn();
+    render(
+      <ReaderProvider>
+        <View
+          templateUri="file:///tmp/index.html"
+          readAccessUrl="file:///tmp/"
+          width="100%"
+          height="100%"
+          defaultTheme={{ body: { background: '#ffffff' } }}
+          initialLocation={initialLocation}
+          onLocationChange={onLocationChange}
+        />
+      </ReaderProvider>
+    );
+
+    const send = (type: string, cfi: string) =>
+      lastWebViewProps?.onMessage?.({
+        nativeEvent: {
+          data: JSON.stringify({
+            type,
+            totalLocations: 10,
+            progress: cfi === initialLocation ? 50 : 0,
+            currentSection: { href: 'chapter.xhtml' },
+            currentLocation: {
+              atStart: false,
+              atEnd: false,
+              start: { cfi, href: 'chapter.xhtml' },
+              end: { cfi },
+            },
+          }),
+        },
+      } as never);
+
+    act(() => send('onLocationChange', 'epubcfi(/6/2!/4/2)'));
+    expect(onLocationChange).not.toHaveBeenCalled();
+
+    act(() => send('onReady', 'epubcfi(/6/2!/4/2)'));
+    expect(mockInjectJavaScript).toHaveBeenCalledWith(
+      expect.stringContaining(
+        `rendition.display(${JSON.stringify(initialLocation)})`
+      )
+    );
+
+    const resolvedLocation = 'epubcfi(/6/8!/4/2/1:0)';
+    act(() => send('onLocationChange', resolvedLocation));
+    expect(onLocationChange).toHaveBeenCalledTimes(1);
+    expect(onLocationChange).toHaveBeenCalledWith(
+      10,
+      expect.objectContaining({
+        start: expect.objectContaining({ cfi: resolvedLocation }),
+      }),
+      0,
+      expect.anything()
+    );
+  });
+
+  it('stops suppressing locations when initial restoration fails', () => {
+    const onDisplayError = jest.fn();
+    const onLocationChange = jest.fn();
+    render(
+      <ReaderProvider>
+        <View
+          templateUri="file:///tmp/index.html"
+          readAccessUrl="file:///tmp/"
+          width="100%"
+          height="100%"
+          defaultTheme={{ body: { background: '#ffffff' } }}
+          initialLocation="epubcfi(/invalid)"
+          onDisplayError={onDisplayError}
+          onLocationChange={onLocationChange}
+        />
+      </ReaderProvider>
+    );
+
+    act(() => {
+      lastWebViewProps?.onMessage?.({
+        nativeEvent: {
+          data: JSON.stringify({
+            type: 'onDisplayError',
+            reason: 'Invalid CFI',
+          }),
+        },
+      } as never);
+    });
+    act(() => {
+      lastWebViewProps?.onMessage?.({
+        nativeEvent: {
+          data: JSON.stringify({
+            type: 'onLocationChange',
+            totalLocations: 10,
+            progress: 0,
+            currentSection: { href: 'chapter.xhtml' },
+            currentLocation: {
+              atStart: true,
+              atEnd: false,
+              start: { cfi: 'epubcfi(/6/2!/4/2)', href: 'chapter.xhtml' },
+              end: { cfi: 'epubcfi(/6/2!/4/4)' },
+            },
+          }),
+        },
+      } as never);
+    });
+
+    expect(onDisplayError).toHaveBeenCalledWith('Invalid CFI');
+    expect(onLocationChange).toHaveBeenCalledTimes(1);
   });
 });
