@@ -1,6 +1,6 @@
 {
   "name": "@epubjs-react-native/core",
-  "version": "1.4.7-mason.4",
+  "version": "1.4.7-mason.5",
   "description": "A digital book reader in .opf .epub format for react native using epub.js library inside a webview.",
   "main": "./src/index.tsx",
   "types": "./src/index.tsx",

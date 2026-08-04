@@ -1,6 +1,6 @@
 import React from 'react';
 import { Platform } from 'react-native';
-import { render, waitFor } from '@testing-library/react-native';
+import { act, render, waitFor } from '@testing-library/react-native';
 import { Reader } from '../Reader';
 import { ReaderProvider } from '../context';
 
@@ -131,5 +131,36 @@ describe('Reader defaults', () => {
         'Unable to open book: Failed to save the EPUB reader template: read-only directory'
       )
     ).toBeTruthy();
+  });
+
+  it('does not reinitialize when the display error callback changes', async () => {
+    const firstOnDisplayError = jest.fn();
+    const secondOnDisplayError = jest.fn();
+    const screen = render(
+      <ReaderProvider>
+        <Reader
+          src="file:///books/pride-and-prejudice.epub"
+          fileSystem={useFileSystem}
+          onDisplayError={firstOnDisplayError}
+        />
+      </ReaderProvider>
+    );
+
+    await waitFor(() => expect(capturedViewProps).toHaveLength(1));
+
+    await act(async () => {
+      screen.rerender(
+        <ReaderProvider>
+          <Reader
+            src="file:///books/pride-and-prejudice.epub"
+            fileSystem={useFileSystem}
+            onDisplayError={secondOnDisplayError}
+          />
+        </ReaderProvider>
+      );
+    });
+
+    expect(mockInjectWebViewVariables).toHaveBeenCalledTimes(1);
+    expect(writeAsStringAsync).toHaveBeenCalledTimes(3);
   });
 });

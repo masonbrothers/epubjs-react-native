@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { LoadingFile } from './utils/LoadingFile';
 import type { ReaderProps } from './types';
 import { View } from './View';
@@ -55,6 +55,11 @@ export function Reader({
   const [initializationError, setInitializationError] = useState<string | null>(
     null
   );
+  const onDisplayErrorRef = useRef(onDisplayError);
+
+  useEffect(() => {
+    onDisplayErrorRef.current = onDisplayError;
+  }, [onDisplayError]);
 
   useEffect(() => {
     let isActive = true;
@@ -174,7 +179,7 @@ export function Reader({
         }`;
         setInitializationError(reason);
         setIsLoading(false);
-        onDisplayError?.(reason);
+        onDisplayErrorRef.current?.(reason);
       }
     })();
 
@@ -191,7 +196,6 @@ export function Reader({
     enableSelection,
     initialLocations,
     injectWebViewVariables,
-    onDisplayError,
     setIsLoading,
     src,
     // ! Causing unknown loop
@@ -217,7 +221,7 @@ export function Reader({
         }`;
         setInitializationError(reason);
         setIsLoading(false);
-        onDisplayError?.(reason);
+        onDisplayErrorRef.current?.(reason);
       }
     };
     if (template) {
@@ -228,7 +232,6 @@ export function Reader({
     };
   }, [
     documentDirectory,
-    onDisplayError,
     setIsLoading,
     template,
     writeAsStringAsync,
