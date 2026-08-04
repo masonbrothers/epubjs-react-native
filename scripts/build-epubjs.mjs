@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const engine = resolve(root, 'vendor/epub.js');
-const expectedCommit = 'a26aa79de5dfd2f890c9f28aae858e4653cc78d5';
+const expectedCommit = '5c731a0591848d785c291a55c959f456381b4da2';
 const actualCommit = execFileSync('git', ['-C', engine, 'rev-parse', 'HEAD'], {
   encoding: 'utf8',
 }).trim();
@@ -22,12 +22,9 @@ if (!existsSync(resolve(engine, 'node_modules/webpack/bin/webpack.js'))) {
   );
 }
 
-const nodeOptions = [process.env.NODE_OPTIONS, '--openssl-legacy-provider']
-  .filter(Boolean)
-  .join(' ');
 const result = spawnSync('npm', ['run', 'minify'], {
   cwd: engine,
-  env: { ...process.env, NODE_OPTIONS: nodeOptions },
+  env: process.env,
   stdio: 'inherit',
 });
 

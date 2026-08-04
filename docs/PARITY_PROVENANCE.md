@@ -1,6 +1,6 @@
 # Wrapper Parity Provenance
 
-Date: 2026-08-03
+Date: 2026-08-04
 Branch: `integration/parity-9522941`
 Baseline tag: `upstream-baseline-9522941`
 
@@ -15,11 +15,11 @@ Baseline tag: `upstream-baseline-9522941`
 
 | Tool           | Version      |
 | -------------- | ------------ |
-| Node.js        | `v24.13.0`   |
-| npm            | `11.6.2`     |
-| packageManager | `npm@11.6.2` |
+| Node.js        | `v24.18.0`   |
+| npm            | `12.0.2`     |
+| packageManager | `npm@12.0.2` |
 
-`.nvmrc` is pinned to `24.13.0`.
+`.nvmrc` is pinned to `24.18.0`.
 
 ## Baseline Package Evidence
 
@@ -42,7 +42,7 @@ Baseline tag: `upstream-baseline-9522941`
 
 ## Post-baseline Maintenance
 
-Date: 2026-08-03
+Date: 2026-08-04
 
 - Disabled `allowScriptedContent` by default on both iOS and Android in
   `src/Reader.tsx`.
@@ -95,7 +95,7 @@ related upstream wrapper report, PR #399.
 
 ## Maintained Engine Promotion
 
-The nested engine commit `a26aa79de5dfd2f890c9f28aae858e4653cc78d5` independently addresses and
+The nested engine commit `5c731a0591848d785c291a55c959f456381b4da2` independently addresses and
 tests the behavior reported in:
 
 - [futurepress/epub.js issue #1408](https://github.com/futurepress/epub.js/issues/1408)
@@ -110,6 +110,12 @@ tests the behavior reported in:
 
 The generated EPUB.js module must be reproduced from that exact gitlink and
 verified against `generated-artifacts.json`; it is never edited by hand.
+
+That engine release also updates the production XML parser to
+`@xmldom/xmldom@0.9.10`, moves the browser toolchain from Webpack 4/Karma 5 to
+Webpack 5/Karma 6, and records a zero-vulnerability production npm audit. The
+wrapper's development native-module versions remain aligned with Expo SDK 57
+rather than forcing unsupported npm-latest majors.
 
 ## Distribution licensing
 

@@ -20,4 +20,4 @@ export const WebView = forwardRef((props: Record<string, unknown>, ref) => {
 
 WebView.displayName = 'MockWebView';
 
-export default { WebView, mockInjectJavaScript, resetWebViewMockState };
+export default WebView;

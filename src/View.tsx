@@ -1,9 +1,10 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Dimensions, Platform, View as RNView } from 'react-native';
-import { WebView } from 'react-native-webview';
+import WebView, { type WebViewProps as NativeWebViewProps } from 'react-native-webview';
 import type {
   ShouldStartLoadRequest,
   WebViewMessageEvent,
+  WebViewOpenWindowEvent,
 } from 'react-native-webview/lib/WebViewTypes';
 import { defaultTheme as initialTheme, ReaderContext } from './context';
 import type { Bookmark, ReaderProps } from './types';
@@ -15,6 +16,10 @@ export type ViewProps = Omit<ReaderProps, 'src' | 'fileSystem'> & {
   templateUri: string;
   readAccessUrl: string;
 };
+
+const WebViewComponent = WebView as unknown as React.ComponentType<
+  NativeWebViewProps & React.RefAttributes<WebView>
+>;
 
 export function View({
   templateUri,
@@ -482,7 +487,7 @@ export function View({
         </RNView>
       )}
 
-      <WebView
+      <WebViewComponent
         ref={book}
         source={{ uri: templateUri }}
         showsVerticalScrollIndicator={false}
@@ -501,7 +506,7 @@ export function View({
         allowFileAccessFromFileURLs={Platform.OS === 'android'}
         allowFileAccess={Platform.OS === 'android'}
         javaScriptCanOpenWindowsAutomatically={Boolean(onPressExternalLink)}
-        onOpenWindow={(event) => {
+        onOpenWindow={(event: WebViewOpenWindowEvent) => {
           event.preventDefault();
 
           if (onPressExternalLink) {

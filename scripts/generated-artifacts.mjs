@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(import.meta.url);
 const manifestPath = resolve(root, 'generated-artifacts.json');
-const expectedEngineCommit = 'a26aa79de5dfd2f890c9f28aae858e4653cc78d5';
+const expectedEngineCommit = '5c731a0591848d785c291a55c959f456381b4da2';
 const expectedJszipVersion = '3.10.1';
 const expectedJszipIntegrity =
   'sha512-xXDvecyTpGLrqFrvkrUSoxxfJI5AH7U8zxxtVclpsUtMCq4JQ290LY8AW5c7Ggnr/Y/oK+bQMbqK2qmtk3pN4g==';
@@ -127,6 +127,7 @@ const manifest = `${JSON.stringify(
     licenses: [
       'licenses/EPUBJS-BSD-2-Clause.txt',
       'licenses/EPUBJS-BUNDLED-MIT-NOTICES.txt',
+      'licenses/EPUBJS-BUNDLED-ISC-NOTICES.txt',
       'licenses/JSZIP-MIT.txt',
       'licenses/LOCALFORAGE-APACHE-2.0.txt',
       'licenses/PAKO-MIT.txt',

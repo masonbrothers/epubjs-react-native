@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect, useRef } from "react"
 import { DimensionValue, I18nManager, Platform, View } from "react-native"
 import {
 	GestureHandlerRootView,
@@ -57,23 +57,34 @@ export function GestureHandler({
 
 	const swipeDown = Gesture.Fling().runOnJS(true).direction(Directions.DOWN).onStart(onSwipeDown)
 
-	let lastTap: number | null = null
-	let timer: ReturnType<typeof setTimeout> | null = null
+	const lastTapRef = useRef<number | null>(null)
+	const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+	useEffect(() => {
+		return () => {
+			if (timerRef.current) {
+				clearTimeout(timerRef.current)
+				timerRef.current = null
+			}
+		}
+	}, [])
 
 	const handleDoubleTap = () => {
-		if (lastTap) {
+		if (lastTapRef.current) {
 			onDoubleTap()
-			if (timer) {
-				clearTimeout(timer)
+			if (timerRef.current) {
+				clearTimeout(timerRef.current)
+				timerRef.current = null
 			}
-			lastTap = null
+			lastTapRef.current = null
 		} else {
-			lastTap = Date.now()
-			timer = setTimeout(() => {
+			lastTapRef.current = Date.now()
+			timerRef.current = setTimeout(() => {
 				onSingleTap()
-				lastTap = null
-				if (timer) {
-					clearTimeout(timer)
+				lastTapRef.current = null
+				if (timerRef.current) {
+					clearTimeout(timerRef.current)
+					timerRef.current = null
 				}
 			}, 500)
 		}

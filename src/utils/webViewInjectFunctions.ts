@@ -95,7 +95,6 @@ export function addAnnotation(
   const epubStyles = mapAnnotationStylesToEpubStyles(type, styles);
 
   if (type === 'mark') {
-    // eslint-disable-next-line no-param-reassign
     iconClass = iconClass || 'epubjs-mk-balloon';
   }
 
@@ -128,7 +127,6 @@ export function addAnnotationByTagId(
   const epubStyles = mapAnnotationStylesToEpubStyles(type, styles);
 
   if (type === 'mark') {
-    // eslint-disable-next-line no-param-reassign
     iconClass = iconClass || 'epubjs-mk-balloon';
   }
 

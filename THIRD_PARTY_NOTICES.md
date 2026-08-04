@@ -7,25 +7,30 @@ runtime. Their source and output hashes are recorded in
 ## EPUB.js
 
 - Source: `https://github.com/masonbrothers/epub.js`
-- Commit: `a26aa79de5dfd2f890c9f28aae858e4653cc78d5`
+- Commit: `5c731a0591848d785c291a55c959f456381b4da2`
 - Upstream: `https://github.com/futurepress/epub.js`
 - License: BSD-2-Clause (`licenses/EPUBJS-BSD-2-Clause.txt`)
 - Copyright: FuturePress, 2013
 
 The generated EPUB.js browser artifact also embeds its build-time runtime
-dependencies. The complete MIT attribution set is retained in
-`licenses/EPUBJS-BUNDLED-MIT-NOTICES.txt`:
+dependencies. The complete MIT and ISC attribution sets are retained in
+`licenses/EPUBJS-BUNDLED-MIT-NOTICES.txt` and
+`licenses/EPUBJS-BUNDLED-ISC-NOTICES.txt`:
 
 | Package          | Version | License |
 | ---------------- | ------- | ------- |
-| `@xmldom/xmldom` | 0.7.5   | MIT     |
-| `core-js`        | 3.18.3  | MIT     |
+| `@xmldom/xmldom` | 0.9.10  | MIT     |
+| `core-js`        | 3.49.0  | MIT     |
 | `event-emitter`  | 0.3.5   | MIT     |
-| `d`              | 1.0.0   | MIT     |
-| `es5-ext`        | 0.10.24 | MIT     |
-| `es6-iterator`   | 2.0.1   | MIT     |
-| `es6-symbol`     | 3.1.1   | MIT     |
-| `lodash`         | 4.17.21 | MIT     |
+| `d`              | 1.0.2   | ISC     |
+| `es5-ext`        | 0.10.64 | ISC     |
+| `es6-iterator`   | 2.0.3   | MIT     |
+| `es6-symbol`     | 3.1.4   | ISC     |
+| `esniff`         | 2.0.1   | ISC     |
+| `ext`            | 1.7.0   | ISC     |
+| `next-tick`      | 1.1.0   | ISC     |
+| `type`           | 2.7.3   | ISC     |
+| `lodash`         | 4.18.1  | MIT     |
 | `marks-pane`     | 1.0.9   | MIT     |
 | `path-webpack`   | 0.0.3   | MIT     |
 

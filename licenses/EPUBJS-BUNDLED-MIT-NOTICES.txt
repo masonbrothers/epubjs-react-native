@@ -3,21 +3,21 @@ EPUB.js embedded runtime dependency notices
 The generated EPUB.js browser artifact is built with the following MIT
 licensed packages and their transitive runtime dependencies:
 
-- @xmldom/xmldom 0.7.5
+- @xmldom/xmldom 0.9.10
   Copyright 2019-present Christopher J. Brody and other contributors
   Copyright 2012-2017 @jindw and other contributors
-- core-js 3.18.3
-  Copyright (c) 2014-2021 Denis Pushkarev
+- core-js 3.49.0
+  Copyright (c) 2014-present Denis Pushkarev
 - event-emitter 0.3.5
   Copyright (C) 2012-2015 Mariusz Nowak
-- d 1.0.0, es5-ext 0.10.24, es6-iterator 2.0.1, es6-symbol 3.1.1
+- es6-iterator 2.0.3
   Copyright Mariusz Nowak and contributors
 - lie 3.1.1
   Copyright (c) 2014 Calvin Metcalf
 - immediate 3.0.6
   Copyright (c) 2012 Barnesandnoble.com, Donavon West, Domenic Denicola,
   Brian Cavalier
-- lodash 4.17.21
+- lodash 4.18.1
   Copyright OpenJS Foundation and other contributors
   Based on Underscore.js, copyright Jeremy Ashkenas, DocumentCloud and
   Investigative Reporters & Editors
